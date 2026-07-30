@@ -1,4 +1,5 @@
 use super::GitHealth;
+use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
@@ -45,25 +46,39 @@ fn get_commit_count(repo_path: &Path) -> usize {
 fn get_contributors(repo_path: &Path) -> Vec<(String, usize)> {
     let output = Command::new("git")
         .arg("shortlog")
-        .arg("-sn")
+        .arg("-sne")
         .arg("--all")
         .current_dir(repo_path)
         .output();
 
-    let mut result = Vec::new();
+    let mut email_map: HashMap<String, (String, usize)> = HashMap::new();
+
     if let Ok(out) = output {
         if out.status.success() {
             let s = String::from_utf8_lossy(&out.stdout);
             for line in s.lines() {
                 let trimmed = line.trim();
-                if let Some((count_str, name)) = trimmed.split_once('\t') {
+                if let Some((count_str, rest)) = trimmed.split_once('\t') {
                     if let Ok(count) = count_str.trim().parse::<usize>() {
-                        result.push((name.trim().to_string(), count));
+                        if let (Some(start_angle), Some(end_angle)) = (rest.rfind('<'), rest.rfind('>')) {
+                            let name = rest[..start_angle].trim().to_string();
+                            let email = rest[start_angle + 1..end_angle].trim().to_lowercase();
+
+                            let entry = email_map.entry(email).or_insert_with(|| (name.clone(), 0));
+                            entry.1 += count;
+                        } else {
+                            let key = rest.trim().to_lowercase();
+                            let entry = email_map.entry(key).or_insert_with(|| (rest.trim().to_string(), 0));
+                            entry.1 += count;
+                        }
                     }
                 }
             }
         }
     }
+
+    let mut result: Vec<(String, usize)> = email_map.into_values().collect();
+    result.sort_by(|a, b| b.1.cmp(&a.1));
     result
 }
 

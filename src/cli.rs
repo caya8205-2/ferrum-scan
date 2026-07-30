@@ -14,52 +14,38 @@ pub struct Cli {
     pub command: Option<Commands>,
 
     /// Target directory to scan (default: current directory)
-    #[arg(short, long, default_value = ".")]
+    #[arg(default_value = ".", global = true)]
     pub path: PathBuf,
 
     /// Output format (text, md, json)
-    #[arg(short, long, value_enum, default_value_t = OutputFormat::Text)]
+    #[arg(short, long, value_enum, default_value_t = OutputFormat::Text, global = true)]
     pub format: OutputFormat,
 
     /// Output file path for export (if saving to file)
-    #[arg(short, long)]
+    #[arg(short, long, global = true)]
     pub output: Option<PathBuf>,
 
     /// Large file threshold in MB
-    #[arg(long, default_value_t = 5.0)]
+    #[arg(long, default_value_t = 5.0, global = true)]
     pub jumbo_threshold_mb: f64,
+
+    /// Perform a full scan including hidden files and ignored paths (.gitignore)
+    #[arg(long, global = true)]
+    pub full: bool,
+
+    /// Inspect top directory storage usage breakdown
+    #[arg(short, long, global = true)]
+    pub storage: bool,
+
+    /// Detect duplicate files across the repository
+    #[arg(short, long, global = true)]
+    pub duplicates: bool,
 }
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Scan target repository and display results in terminal
-    Scan {
-        /// Target directory path
-        #[arg(default_value = ".")]
-        path: PathBuf,
-
-        /// Large file threshold in MB
-        #[arg(long, default_value_t = 5.0)]
-        jumbo_threshold_mb: f64,
-    },
-    /// Scan target repository and export report to a file
-    Export {
-        /// Target directory path
-        #[arg(default_value = ".")]
-        path: PathBuf,
-
-        /// Export format (md, json)
-        #[arg(short, long, value_enum, default_value_t = OutputFormat::Md)]
-        format: OutputFormat,
-
-        /// Output file path (default: SCAN_REPORT.md or scan_report.json)
-        #[arg(short, long)]
-        output: Option<PathBuf>,
-
-        /// Large file threshold in MB
-        #[arg(long, default_value_t = 5.0)]
-        jumbo_threshold_mb: f64,
-    },
+    /// Export scan report to a file (Markdown / JSON)
+    Export,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]

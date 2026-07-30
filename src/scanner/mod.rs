@@ -1,5 +1,8 @@
+pub mod duplicates;
 pub mod git_inspector;
+pub mod insights;
 pub mod metrics;
+pub mod storage;
 pub mod walker;
 
 use serde::{Deserialize, Serialize};
@@ -33,6 +36,20 @@ pub struct GitHealth {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FolderStat {
+    pub relative_path: String,
+    pub bytes: u64,
+    pub files_count: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DuplicateGroup {
+    pub size_bytes: u64,
+    pub hash: u64,
+    pub files: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RepoStats {
     pub root_path: PathBuf,
     pub total_files: usize,
@@ -45,4 +62,8 @@ pub struct RepoStats {
     pub total_blank_lines: usize,
     pub total_comment_lines: usize,
     pub total_lines: usize,
+    pub top_folders: Option<Vec<FolderStat>>,
+    pub duplicate_groups: Option<Vec<DuplicateGroup>>,
+    pub total_wasted_bytes: u64,
+    pub insights: Vec<String>,
 }

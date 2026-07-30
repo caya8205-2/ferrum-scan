@@ -75,6 +75,49 @@ fn generate_markdown(stats: &RepoStats) -> String {
         stats.total_lines
     ));
 
+    if let Some(ref folders) = stats.top_folders {
+        md.push_str("## 📂 Storage Breakdown (Top Folders)\n\n");
+        md.push_str("| Folder Name | Files | Size (MB) |\n");
+        md.push_str("| :--- | :---: | :---: |\n");
+        for folder in folders {
+            let folder_mb = folder.bytes as f64 / (1024.0 * 1024.0);
+            md.push_str(&format!(
+                "| `{}` | {} | {:.2} MB |\n",
+                folder.relative_path, folder.files_count, folder_mb
+            ));
+        }
+        md.push('\n');
+    }
+
+    if let Some(ref dups) = stats.duplicate_groups {
+        md.push_str("## 👯 Duplicate Files Detector\n\n");
+        let wasted_mb = stats.total_wasted_bytes as f64 / (1024.0 * 1024.0);
+        md.push_str(&format!("- **Total Duplicate Groups**: `{}`\n", dups.len()));
+        md.push_str(&format!("- **Wasted Storage Space**: `{:.2} MB`\n\n", wasted_mb));
+
+        if !dups.is_empty() {
+            md.push_str("| Size / File | Copies | Paths |\n");
+            md.push_str("| :---: | :---: | :--- |\n");
+            for group in dups.iter().take(15) {
+                let size_mb = group.size_bytes as f64 / (1024.0 * 1024.0);
+                let paths_str = group
+                    .files
+                    .iter()
+                    .map(|p| format!("`{}`", p.display()))
+                    .collect::<Vec<_>>()
+                    .join("<br>");
+
+                md.push_str(&format!(
+                    "| {:.2} MB | {} | {} |\n",
+                    size_mb,
+                    group.files.len(),
+                    paths_str
+                ));
+            }
+            md.push('\n');
+        }
+    }
+
     md.push_str("## 🩺 Git Health Inspector\n\n");
     if stats.git_health.is_git_repo {
         md.push_str("- **Git Repo**: Yes\n");
@@ -106,6 +149,12 @@ fn generate_markdown(stats: &RepoStats) -> String {
         }
         md.push('\n');
     }
+
+    md.push_str("## 💡 Repository Insights\n\n");
+    for insight in &stats.insights {
+        md.push_str(&format!("- {}\n", insight));
+    }
+    md.push('\n');
 
     md
 }

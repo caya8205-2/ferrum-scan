@@ -50,6 +50,72 @@ pub fn print_terminal_report(stats: &RepoStats) {
     println!("--- LANGUAGE BREAKDOWN ---");
     println!("{}\n", table);
 
+    // Storage Breakdown Section
+    if let Some(ref folders) = stats.top_folders {
+        println!("--- TOP DIRECTORIES BY STORAGE (--storage) ---");
+        if folders.is_empty() {
+            println!("No subdirectories found.\n");
+        } else {
+            let mut storage_table = Table::new();
+            storage_table
+                .load_preset(UTF8_FULL)
+                .set_header(vec![
+                    Cell::new("Folder Name").fg(Color::Yellow),
+                    Cell::new("Files").fg(Color::Cyan),
+                    Cell::new("Size (MB)").fg(Color::Green),
+                ]);
+
+            for folder in folders {
+                let folder_mb = folder.bytes as f64 / (1024.0 * 1024.0);
+                storage_table.add_row(vec![
+                    Cell::new(&folder.relative_path).fg(Color::Yellow),
+                    Cell::new(folder.files_count),
+                    Cell::new(format!("{:.2} MB", folder_mb)).fg(Color::Green),
+                ]);
+            }
+            println!("{}\n", storage_table);
+        }
+    }
+
+    // Duplicate Files Section
+    if let Some(ref dups) = stats.duplicate_groups {
+        println!("--- DUPLICATE FILES DETECTOR (--duplicates) ---");
+        let wasted_mb = stats.total_wasted_bytes as f64 / (1024.0 * 1024.0);
+        println!("⚠️  Total Wasted Storage Space: {:.2} MB ({} duplicate groups)\n", wasted_mb, dups.len());
+
+        if dups.is_empty() {
+            println!("✅ No duplicate files found.\n");
+        } else {
+            let mut dup_table = Table::new();
+            dup_table
+                .load_preset(UTF8_FULL)
+                .set_header(vec![
+                    Cell::new("Group Hash").fg(Color::Magenta),
+                    Cell::new("Size/File").fg(Color::Cyan),
+                    Cell::new("Copies").fg(Color::Yellow),
+                    Cell::new("Duplicate Paths").fg(Color::White),
+                ]);
+
+            for group in dups.iter().take(10) {
+                let size_mb = group.size_bytes as f64 / (1024.0 * 1024.0);
+                let paths_str = group
+                    .files
+                    .iter()
+                    .map(|p| p.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join("\n");
+
+                dup_table.add_row(vec![
+                    Cell::new(format!("{:x}", group.hash)).fg(Color::Magenta),
+                    Cell::new(format!("{:.2} MB", size_mb)).fg(Color::Cyan),
+                    Cell::new(group.files.len()).fg(Color::Yellow),
+                    Cell::new(paths_str),
+                ]);
+            }
+            println!("{}\n", dup_table);
+        }
+    }
+
     // Git Health Section
     if stats.git_health.is_git_repo {
         println!("--- GIT HEALTH INSPECTOR ---");
@@ -91,4 +157,11 @@ pub fn print_terminal_report(stats: &RepoStats) {
         }
         println!("{}\n", jumbo_table);
     }
+
+    // Repository Insights (FINAL SECTION)
+    println!("--- 💡 REPOSITORY INSIGHTS ---");
+    for insight in &stats.insights {
+        println!("• {}", insight);
+    }
+    println!();
 }
