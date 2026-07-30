@@ -1,14 +1,36 @@
-# ferrum-scan
+<p align="center">
+  <img src="public/ascii.svg" alt="Ferrum-scan ASCII" width="450" />
+</p>
+
+<p align="center"><b>Ultra-fast multithreaded repository scanner and health inspector CLI tools built in Rust</b></p>
+
+<div align="center">
 
 [![Rust](https://img.shields.io/badge/Rust-2021-orange?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
 [![CLI](https://img.shields.io/badge/CLI-Clap_4.5-blue?style=for-the-badge)](https://docs.rs/clap/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
-**ferrum-scan** is an ultra-fast, multithreaded repository scanner and health inspector CLI written in pure Rust.
+</div>
 
 <p align="center">
   <img src="./public/demo.png" width="900">
 </p>
+
+## Quick 1-Liner Installation (No Rust / Cargo Required)
+
+Install binary directly from GitHub Releases without needing Rust toolchains or Visual Studio Build Tools:
+
+### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/caya8205-2/ferrum-scan/main/install.ps1 | iex
+```
+
+### Linux / macOS (Bash)
+```bash
+curl -fsSL https://raw.githubusercontent.com/caya8205-2/ferrum-scan/main/install.sh | bash
+```
+
+---
 
 ## Features
 
@@ -22,29 +44,20 @@
 - **Jumbo File Detector**: Flags large files exceeding a customizable threshold (default 5MB).
 - **Terminal Visuals & Export**: Formats statistics in clean terminal tables using `comfy-table` and supports exporting reports to `Markdown` (`SCAN_REPORT.md`) or `JSON`.
 
-## Real-world benchmark
-
-| Project | Files | LOC | Size | Time |
-|---------|------:|----:|-----:|-----:|
-| Laravel ERP | 18,677 | 2.64M | 117 MB | 4.1 s |
-| Desktop Music Player (Node + Rust + Tauri) | 34,293 | 5.56M | 240 MB | 7.7 s |
-
-## Benchmark & Sample Report
+## Real-World Benchmark
 
 Check out a real-world full benchmark report scanning **34,000+ files and 5.5 Million+ lines of code**:
 
 👉 **[View Full SCAN_REPORT.md](SCAN_REPORT.md)**
 
-## Installation & Build
+## Build from Source
 
-Ensure Rust and Cargo are installed on your system.
-
-### Build from Source
+### Build
 ```bash
 cargo build --release
 ```
 
-### Global Installation
+### Global Install via Cargo
 ```bash
 cargo install --path .
 ```
@@ -87,4 +100,4 @@ ferrum-scan export --format md --output SCAN_REPORT.md -s -d
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License.](License)

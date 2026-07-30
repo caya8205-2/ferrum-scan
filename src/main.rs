@@ -1,15 +1,22 @@
 mod cli;
 mod display;
 mod scanner;
+mod uninstaller;
 
 use clap::Parser;
 use cli::{Cli, Commands, OutputFormat};
 use display::{export_report, print_terminal_report};
 use scanner::walker::scan_repository;
 use std::process;
+use uninstaller::handle_uninstall;
 
 fn main() {
     let cli = Cli::parse();
+
+    if let Some(Commands::Uninstall { yes }) = cli.command {
+        handle_uninstall(yes);
+        return;
+    }
 
     let stats = scan_repository(
         &cli.path,

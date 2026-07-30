@@ -46,6 +46,13 @@ pub struct Cli {
 pub enum Commands {
     /// Export scan report to a file (Markdown / JSON)
     Export,
+
+    /// Uninstall ferrum-scan binary and remove application data
+    Uninstall {
+        /// Bypass confirmation prompt
+        #[arg(short = 'y', long)]
+        yes: bool,
+    },
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
