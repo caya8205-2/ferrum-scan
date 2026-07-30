@@ -19,6 +19,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Sync Cargo.lock version
+        shell: bash
+        run: |
+          cargo check
+          if [ -n "$(git status --porcelain Cargo.lock)" ]; then
+            echo "Cargo.lock is out of sync with Cargo.toml. Auto-committing update..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add Cargo.lock
+            git commit -m "chore: sync Cargo.lock version [skip ci]"
+            git push
+          else
+            echo "Cargo.lock is in sync."
+          fi
+
       - name: Read version from Cargo.toml
         id: version
         shell: bash
