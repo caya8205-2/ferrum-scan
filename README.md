@@ -18,6 +18,12 @@
 - **Jumbo File Detector**: Flags large files exceeding a customizable threshold (default 5MB).
 - **Terminal Visuals & Export**: Formats statistics in clean terminal tables using `comfy-table` and supports exporting reports to `Markdown` (`SCAN_REPORT.md`) or `JSON`.
 
+## Benchmark & Sample Report
+
+Check out a real-world full benchmark report scanning **34,000+ files and 5.5 Million+ lines of code**:
+
+👉 **[View Full SCAN_REPORT.md](SCAN_REPORT.md)**
+
 ## Installation & Build
 
 Ensure Rust and Cargo are installed on your system.
