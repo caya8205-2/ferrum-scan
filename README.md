@@ -6,6 +6,10 @@
 
 **ferrum-scan** is an ultra-fast, multithreaded repository scanner and health inspector CLI written in pure Rust.
 
+<p align="center">
+  <img src="./public/demo.png" width="900">
+</p>
+
 ## Features
 
 - **Ultra-Fast Repository Scanner**: Scans project directories in parallel within milliseconds using `rayon` and `ignore`. Respects `.gitignore`, `.ignore`, and automatically skips `.git`, `node_modules`, `target`, and hidden directories by default.
@@ -17,6 +21,13 @@
 - **Git Health Inspector**: Analyzes total commits, active contributors, top contributors, and last commit dates.
 - **Jumbo File Detector**: Flags large files exceeding a customizable threshold (default 5MB).
 - **Terminal Visuals & Export**: Formats statistics in clean terminal tables using `comfy-table` and supports exporting reports to `Markdown` (`SCAN_REPORT.md`) or `JSON`.
+
+## Real-world benchmark
+
+| Project | Files | LOC | Size | Time |
+|---------|------:|----:|-----:|-----:|
+| Laravel ERP | 18,677 | 2.64M | 117 MB | 4.1 s |
+| Desktop Music Player (Node + Rust + Tauri) | 34,293 | 5.56M | 240 MB | 7.7 s |
 
 ## Benchmark & Sample Report
 
