@@ -23,6 +23,10 @@ if [ "$1" = "--uninstall" ] || [ "$1" = "-u" ]; then
     sed -i '\/\.ferrum-scan\/bin/d' "$HOME/.zshrc"
     echo "  ✓ Removed PATH from .zshrc"
   fi
+  if [ -L "$HOME/.local/bin/ferrum-scan" ] || [ -f "$HOME/.local/bin/ferrum-scan" ]; then
+    rm -f "$HOME/.local/bin/ferrum-scan"
+    echo "  ✓ Removed $HOME/.local/bin/ferrum-scan"
+  fi
 
   echo ""
   echo "✅ ferrum-scan uninstalled successfully."
@@ -30,7 +34,7 @@ if [ "$1" = "--uninstall" ] || [ "$1" = "-u" ]; then
 fi
 
 echo "Fetching release info from GitHub..."
-RELEASE_JSON=$(curl -s "https://github.com")
+RELEASE_JSON=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
 TAG_NAME=$(echo "$RELEASE_JSON" | grep -o '"tag_name": "[^"]*' | cut -d'"' -f4)
 
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -45,7 +49,7 @@ else
   exit 1
 fi
 
-DOWNLOAD_URL="https://github.com"
+DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$TAG_NAME/$BINARY_NAME"
 
 mkdir -p "$INSTALL_DIR"
 echo "Downloading $BINARY_NAME ($TAG_NAME)..."
@@ -58,23 +62,36 @@ echo ""
 
 # --- BAGIAN OTOMATISASI PATH ---
 PATH_LINE='export PATH="$HOME/.ferrum-scan/bin:$PATH"'
-SHELL_RC=""
 
-if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zshrc" ]; then
-  SHELL_RC="$HOME/.zshrc"
-elif [ -n "$BASH_VERSION" ] || [ -f "$HOME/.bashrc" ]; then
-  SHELL_RC="$HOME/.bashrc"
+# 1. Symlink ke ~/.local/bin (biasanya sudah ada di default PATH Linux)
+if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]] || [ -d "$HOME/.local/bin" ] || [ -d "/usr/local/bin" ]; then
+  LOCAL_BIN="$HOME/.local/bin"
+  mkdir -p "$LOCAL_BIN"
+  ln -sf "$BIN_PATH" "$LOCAL_BIN/ferrum-scan"
+  echo "✓ Created symlink in $LOCAL_BIN/ferrum-scan"
 fi
 
-if [ -n "$SHELL_RC" ]; then
-  if ! grep -q ".ferrum-scan/bin" "$SHELL_RC"; then
-    echo "" >> "$SHELL_RC"
-    echo "$PATH_LINE" >> "$SHELL_RC"
-    echo "✓ Added to PATH in $SHELL_RC"
-  else
-    echo "✓ PATH already exists in $SHELL_RC"
+# 2. Tambahkan ke file RC shell (.bashrc / .zshrc) agar permanen di shell baru
+TARGET_RCS=()
+[ -f "$HOME/.bashrc" ] && TARGET_RCS+=("$HOME/.bashrc")
+[ -f "$HOME/.zshrc" ] && TARGET_RCS+=("$HOME/.zshrc")
+
+for RC in "${TARGET_RCS[@]}"; do
+  if ! grep -q ".ferrum-scan/bin" "$RC"; then
+    echo "" >> "$RC"
+    echo "$PATH_LINE" >> "$RC"
+    echo "✓ Added to PATH in $RC"
   fi
-  echo "👉 Please run: source $SHELL_RC (or restart your terminal) to use 'ferrum-scan'"
+done
+
+# 3. Cek apakah ferrum-scan langsung dapat dipanggil di terminal saat ini
+if command -v ferrum-scan >/dev/null 2>&1 || [[ ":$PATH:" == *":$INSTALL_DIR:"* ]] || [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+  echo ""
+  echo "🎉 ferrum-scan is ready to use!"
+  echo "👉 Try running: ferrum-scan --help"
 else
-  echo "Add to PATH manually: $PATH_LINE"
+  echo ""
+  if [ -n "${TARGET_RCS[0]}" ]; then
+    echo "👉 Run: source ${TARGET_RCS[0]} (or restart your terminal) to use 'ferrum-scan'"
+  fi
 fi
